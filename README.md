@@ -172,6 +172,12 @@ if actie =="x":
 
 ## Arduino code 
 
+### MQTT
+
+### Wifi
+
+### LED
+
 ## Finale code
 ### Python
 
