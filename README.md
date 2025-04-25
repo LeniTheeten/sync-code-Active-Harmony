@@ -5,6 +5,31 @@ Dit is een project waarin een Arduino via MQTT communiceert met een Python-progr
 ### MQTT
 **MQTT verbinding opzetten**
 
+```sh
+print("file")
+import paho.mqtt.client as mqtt
+#mqtt op een bepaalde broker instellen
+#later zal de broker de rasberri zelf zijn
+BROKER_URL = "mqtt.eclipseprojects.io"
+BROKER_PORT = 1883
+KEEP_ALIVE = 60
+
+def connect_mqtt(client,userdata,flags,rc):
+    if rc == 0:
+        print("geconnecteerd")
+    else:
+        print("Failed")
+
+client = mqtt.Client()
+client.on_connect = connect_mqtt
+client.connect(BROKER_URL,BROKER_PORT,KEEP_ALIVE)
+#client.loop_start()
+print("voor")
+
+client.loop_forever()
+print("achter")
+```
+
 **MQTT-berichten verzenden**
 
 **MQTT-berichten ontvangen**
