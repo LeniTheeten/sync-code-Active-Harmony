@@ -33,6 +33,41 @@ print("achter")
 **MQTT-berichten verzenden**
 
 **MQTT-berichten ontvangen**
+```sh
+import paho.mqtt.client as mqtt
+#mqtt op een bepaalde broker instellen
+#later zal de broker de rasberri zelf zijn
+exit()
+BROKER_URL = "mqtt.eclipseprojects.io"
+BROKER_PORT = 1883
+KEEP_ALIVE = 60
+
+def connect_mqtt(client,userdata,flags,rc):
+    if rc == 0:
+        print("geconnecteerd")
+    else:
+        print("Failed")
+
+client = mqtt.Client()
+client.on_connect = connect_mqtt
+client.connect(BROKER_URL,BROKER_PORT,KEEP_ALIVE)
+#client.loop_start()
+client.loop_forever()
+
+while True:
+    bericht = input("Typ 'on' om de LED aan te zetten of 'off' om ze uit te zetten: ").strip().lower()
+    #als de imput upper cases of spaties bevat wordt dit weg gedaan
+    if bericht == "on":
+        client.publish(TOPIC, "LED ON")
+        print("Bericht verzonden: LED ON")
+
+    elif bericht == "off":
+        client.publish(TOPIC, "LED OFF")
+        print("Bericht verzonden: LED OFF")
+
+    else:
+        print("ongeldige invoer")
+```
 
 **wifi verbinding**
 ```sh
