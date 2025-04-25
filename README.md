@@ -32,35 +32,47 @@ print("achter")
 
 **MQTT-berichten ontvangen**
 ```sh
-import paho.mqtt.client as mqtt
-#mqtt op een bepaalde broker instellen
-#later zal de broker de rasberri zelf zijn
+import json
+#payload omzetten naar iets leesbaar
 
 BROKER_URL = "mqtt.eclipseprojects.io"
 BROKER_PORT = 1883
 KEEP_ALIVE = 60
 
-def connect_mqtt(client,userdata,flags,rc):
+# Callback functie voor connectie
+def connect_mqtt(client, userdata, flags, rc):
     if rc == 0:
-        print("geconnecteerd")
+        print("Geconnecteerd")
+        client.subscribe("test/74:C7:7A:1B:5A:E0:/waarde")  # Abonneer je direct na het verbinden
     else:
-        print("Failed")
+        print("Verbinden mislukt")
 
+# Callback functie voor ontvangen berichten
+def on_message(client, userdata, message):
+    print(f"Bericht ontvangen op {message.topic}: {message.payload.decode()}")
+    payload_str = message.payload.decode()
+
+    try: 
+        payload_data = json.loads(payload_str)
+        arduino = payload_data.get('mac')
+        status = payload_data.get('on/off')
+
+        print(f"arduino {'mac'}")
+        print(f"status gegevens: {"on/off"}")
+    except json.JSONDecodeError:
+        print("fout bij coderen")
+
+# MQTT client instellen
 client = mqtt.Client()
 client.on_connect = connect_mqtt
-client.connect(BROKER_URL,BROKER_PORT,KEEP_ALIVE)
-#client.loop_start()
-
-TOPIC = "test/topic"
-result, mid = client.subscribe("test/topic")
-print(result)
-def on_message(client, userdata, msg):
-    print("Bericht ontvangen op")
-
 client.on_message = on_message
 
-print("listening")
-client.loop_forever()
+# Verbinden met de broker
+client.connect(BROKER_URL, BROKER_PORT, KEEP_ALIVE)
+
+# Start de loop om berichten te ontvangen
+print("Listening...")
+client.loop_forever()  # Dit houdt het script draaiende
 ```
 
 **MQTT-berichten verzenden**
