@@ -10,6 +10,21 @@ Dit is een project waarin een Arduino via MQTT communiceert met een Python-progr
 **MQTT-berichten ontvangen**
 
 **wifi verbinding**
+```sh
+#IPv4 Address. . . . . . . . . . . : 192.168.0.198
+import socket
+#netwerkverbinding testen
+def check_wifi():
+    try:
+        #verbinding maken met Google's DNS-server (8.8.8.8), omdat deze altijd online is (op poort 53)
+        socket.create_connection(("8.8.8.8",53))
+        print("Verbonden met de Wifi")
+    #foutmelding wanneer het netwerk offline is
+    except OSError:
+        print("Er is geen Wifi verbinding gevonden")
+    return False
+Connectie_Wifi = check_wifi()
+```
 
 ### muziek afspelen via computer
 
