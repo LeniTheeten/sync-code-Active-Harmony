@@ -37,10 +37,17 @@ pygame.mixer.music.load("Testmuziek.mp3")
 #laad het muziekbestand
 pygame.mixer.music.play()
 
-input("Druk op Enter om te stoppen...")
-pygame.mixer.music.stop()
-
 #dit en het muziekbestand moeten in dezelfde map staan
+print("test")
+actie = input()
+if actie =="x":
+    if pygame.mixer.music.get_busy():
+        #laat de muziek spelen
+        pygame.mixer.music.pause()
+        print("Muziek gepauzeerd. Druk op Enter(x) om verder te spelen")
+    else:
+        pygame.mixer.music.unpause()
+        print("Muziek hervt. Druk op Enter(x) om te pauzeren")
 ```
 
 ### sensorwaarden
