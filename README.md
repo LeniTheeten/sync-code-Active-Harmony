@@ -31,6 +31,37 @@ print("achter")
 ```
 
 **MQTT-berichten verzenden**
+```sh
+import paho.mqtt.client as mqtt
+#mqtt op een bepaalde broker instellen
+#later zal de broker de rasberri zelf zijn
+
+BROKER_URL = "mqtt.eclipseprojects.io"
+BROKER_PORT = 1883
+KEEP_ALIVE = 60
+
+def connect_mqtt(client,userdata,flags,rc):
+    if rc == 0:
+        print("geconnecteerd")
+    else:
+        print("Failed")
+
+client = mqtt.Client()
+client.on_connect = connect_mqtt
+client.connect(BROKER_URL,BROKER_PORT,KEEP_ALIVE)
+#client.loop_start()
+
+TOPIC = "test/topic"
+result, mid = client.subscribe("test/topic")
+print(result)
+def on_message(client, userdata, msg):
+    print("Bericht ontvangen op")
+
+client.on_message = on_message
+
+print("listening")
+client.loop_forever()
+```
 
 **MQTT-berichten ontvangen**
 ```sh
