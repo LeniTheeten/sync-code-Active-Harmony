@@ -30,7 +30,7 @@ client.loop_forever()
 print("achter")
 ```
 
-**MQTT-berichten verzenden**
+**MQTT-berichten ontvangen**
 ```sh
 import paho.mqtt.client as mqtt
 #mqtt op een bepaalde broker instellen
@@ -63,7 +63,7 @@ print("listening")
 client.loop_forever()
 ```
 
-**MQTT-berichten ontvangen**
+**MQTT-berichten verzenden**
 ```sh
 import paho.mqtt.client as mqtt
 #mqtt op een bepaalde broker instellen
