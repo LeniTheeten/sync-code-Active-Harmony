@@ -175,7 +175,7 @@ if actie =="x":
 ## Finale code
 ### Python
 
-** simulate sensor**
+**simulate sensor**
 
 Dit werd ontwikkeld omdat de Arduino Nano 33 IoT's niet altijd allemaal beschikbaar waren. De Simulate Sensor krijgt een kleur als output en geeft vervolgens een waarde van 100 of 1000, waarmee de sensorwaarden van de Arduino's worden gesimuleerd.
 De sensor maakt gebruik van dezelfde MQTT-server als de rest van de code, waarop ook de Arduino's verbonden zijn.
