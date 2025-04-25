@@ -28,6 +28,21 @@ Connectie_Wifi = check_wifi()
 
 ### muziek afspelen via computer
 
+```sh
+import pygame
+#importeer de pygame-bibliotheek die eerder geinstalleerd werd
+pygame.mixer.init()
+#zorgt voor de audio
+pygame.mixer.music.load("Testmuziek.mp3")
+#laad het muziekbestand
+pygame.mixer.music.play()
+
+input("Druk op Enter om te stoppen...")
+pygame.mixer.music.stop()
+
+#dit en het muziekbestand moeten in dezelfde map staan
+```
+
 ### sensorwaarden
 **sensorwaarden verwerken**
 
