@@ -1,4 +1,4 @@
-# sync-code-Active-Harmony
+# Sync-code-Active-Harmony
 Dit is een project waarin een Arduino via MQTT communiceert met een Python-programma om een interactieve game-ervaring te creëren. Het spel combineert sensorgegevens van de Arduino met dynamische reacties in Python.
 
 ## Python code 
@@ -112,7 +112,7 @@ while True:
         print("ongeldige invoer")
 ```
 
-**wifi verbinding**
+**Wifi verbinding**
 ```sh
 #IPv4 Address. . . . . . . . . . . : 192.168.0.198
 import socket
@@ -129,7 +129,7 @@ def check_wifi():
 Connectie_Wifi = check_wifi()
 ```
 
-### muziek afspelen via computer
+### Muziek afspelen via computer
 
 ```sh
 import pygame
@@ -153,8 +153,8 @@ if actie =="x":
         print("Muziek hervt. Druk op Enter(x) om te pauzeren")
 ```
 
-### sensorwaarden
-**sensorwaarden verwerken**
+### Sensorwaarden
+**Sensorwaarden verwerken**
 
 **wachten op sensorwaarde verandering**
 
@@ -181,7 +181,7 @@ if actie =="x":
 ## Finale code
 ### Python
 
-**simulate sensor**
+**Simulate sensor**
 
 Dit werd ontwikkeld omdat de Arduino Nano 33 IoT's niet altijd allemaal beschikbaar waren. De Simulate Sensor krijgt een kleur als output en geeft vervolgens een waarde van 100 of 1000, waarmee de sensorwaarden van de Arduino's worden gesimuleerd.
 De sensor maakt gebruik van dezelfde MQTT-server als de rest van de code, waarop ook de Arduino's verbonden zijn.
