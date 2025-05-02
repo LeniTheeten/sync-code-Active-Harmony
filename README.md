@@ -229,13 +229,157 @@ void setup() {
 
 ### MAC-adres
 
+```sh
+String getMacAdress(){
+  char macStr[18];
+  
+  byte mac[6];
+  WiFi.macAddress(mac);
+
+  //Serial.print("MAC Address: ");
+  sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X" , mac[0],mac[1], mac[2], mac[3],mac[4], mac[5]);
+  return String(macStr);
+}
+```
+
 ### Maken en verzenden van topic
 
-### Subscribing en opsplitsen van topic
+```sh
+String maakTopic(){
+  String mac = getMacAdress();
+  String topic = "ActiveHarmony/" + mac + "/+/+/+" ;
+  return topic;
+}
+
+void loop() {
+
+  char lichtwaardeStr[10]; 
+  sprintf(lichtwaardeStr, "%d", lichtwaarde);
+
+  const char* macStr = getMacAdress().c_str();
+
+  char topic[50] = "ActiveHarmony/" ;
+  strcat(topic, macStr) ;
+  strcat(topic, "/");
+  strcat(topic, lichtwaardeStr); 
+  mqttClient.beginMessage(topic);
+  mqttClient.print("Hallo vanaf Arduino Nano 33 IoT!");
+  mqttClient.endMessage();
+
+  Serial.println("MQTT bericht verzonden!");
+  Serial.println(topic);
+
+  delay(100);  // Wacht 5 seconden voordat een nieuw bericht wordt verzonden
+
+  mqttClient.poll();
+}
+```
+
+### Subscribing, ontvangen en opsplitsen van topic
+
+```sh
+void split(String data, char delimiter, String result[], int maxParts) {
+    int start = 0;
+    int end = 0;
+    int index = 0;
+    
+    while ((end = data.indexOf(delimiter, start)) != -1 && index < maxParts - 1) {
+        result[index++] = data.substring(start, end);
+        start = end + 1;
+    }
+    
+    result[index] = data.substring(start);
+}
+
+// Callback functie die wordt aangeroepen wanneer een bericht wordt ontvangen
+void onMqttMessage(int messageSize) {
+  // print out the topic and some message details
+  Serial.println("Received a message: ");
+  String topic = mqttClient.messageTopic();
+  Serial.println(topic);
+  Serial.print(mqttClient.messageTopic());
+
+  // read the incoming data and store it into the payload variable
+  String payloadString = "";
+  for (int i = 0; i < messageSize; i++) {
+    payloadString += (char)mqttClient.read();
+  }
+  payload = payloadString;
+  Serial.println(payload);
+  zetlicht(topic);
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  Serial.print("Subscribing to topic: ");
+  String topic = maakTopic();
+  Serial.println(topic);
+  mqttClient.subscribe(topic);
+}
+```
 
 ### LED
 
+```sh
+int roodPin= 9;
+int groenPin = 11;
+int blauwPin = 10;
+
+void setColor(int redValue, int greenValue,  int blueValue) {
+  analogWrite(roodPin, redValue);
+  analogWrite(groenPin,  greenValue);
+  analogWrite(blauwPin, blueValue);
+}
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(roodPin,  OUTPUT);              
+  pinMode(groenPin, OUTPUT);
+  pinMode(blauwPin, OUTPUT);
+}
+
+void zetlicht(String input){
+  Serial.println("zetlicht");
+  Serial.println(input);
+  
+  String result[5];
+  split(input, '/', result, 5);
+  
+  if (input.startsWith("ActiveHarmony/")) {
+    String mac = result[1];
+    String rood = result[2];
+    String groen = result[3];
+    String blauw = result[4];// MAC-adres is de eerste waarde
+    Serial.println(mac);
+    Serial.println(rood);
+    Serial.println(groen);
+    Serial.println(blauw);
+
+  // Vergelijk MAC-adres met macStr
+    setColor(rood.toInt(), groen.toInt(), blauw.toInt());
+    delay(2000);
+    Serial.println("kleurwaarde");
+    Serial.println(rood.toInt());
+    Serial.println(groen.toInt());
+    Serial.println(blauw.toInt());
+  }
+}
+```
+
 ### Sensor
+
+```sh
+const int sensorPin = A0;
+
+void loop() {  
+
+  int lichtwaarde = analogRead(A0);  // Lees de analoge waarde van de lichtsensor
+    Serial.print("Lichtwaarde: ");
+    Serial.println(lichtwaarde);  // Toon de waarde in de seriële monitor
+    delay(500);
+}
+```
 
 ## Finale code
 ### Python
