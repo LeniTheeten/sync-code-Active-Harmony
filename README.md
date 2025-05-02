@@ -1,5 +1,12 @@
 # Sync-code-Active-Harmony
 Dit is een project waarin een Arduino via MQTT communiceert met een Python-programma om een interactieve game-ervaring te creëren. Het spel combineert sensorgegevens van de Arduino met dynamische reacties in Python.
+## Bedradingsschema
+
+(foto van schema bedrading)
+
+## Opbouw code
+
+(foto van blackbox ,...)
 
 ## Python code 
 ### MQTT
@@ -172,11 +179,40 @@ if actie =="x":
 
 ## Arduino code 
 
-### MQTT
-
 ### Wifi
 
+```sh
+#include <WiFiNINA.h>
+
+WiFiClient wifiClient;
+
+const char* ssid = "A35 van Leni";
+const char* password = "HotspotLeni";
+
+void setup() {
+  Serial.begin(9600);
+
+  Serial.print("Verbinden met WiFi... ");
+  if (WiFi.begin(ssid, password) != WL_CONNECTED) {
+    Serial.println("Mislukt!");
+    while (true);
+  }
+  Serial.println("Verbonden!");
+  Serial.print("IP-adres: ");
+  Serial.println(WiFi.localIP());
+```
+
+### MQTT
+
+### MAC-adres
+
+### Maken en verzenden topic
+
+### Verzenden van topic
+
 ### LED
+
+### Sensor
 
 ## Finale code
 ### Python
