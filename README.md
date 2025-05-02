@@ -204,11 +204,30 @@ void setup() {
 
 ### MQTT
 
+```sh
+MqttClient mqttClient(wifiClient);
+
+const char* mqtt_server = "mqtt.eclipseprojects.io";
+const int mqtt_port = 1883;
+
+String payload;
+
+void setup() {
+  Serial.begin(9600);
+
+  Serial.print("Verbinden met MQTT-broker... ");
+  if (!mqttClient.connect(mqtt_server, mqtt_port)) {
+    Serial.println("Mislukt!");
+    while (true);
+  }
+  Serial.println("Verbonden met MQTT!");
+```
+
 ### MAC-adres
 
-### Maken en verzenden topic
+### Maken en verzenden van topic
 
-### Verzenden van topic
+### Subscribing en opsplitsen van topic
 
 ### LED
 
