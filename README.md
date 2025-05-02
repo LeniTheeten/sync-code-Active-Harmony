@@ -2,11 +2,15 @@
 Dit is een project waarin een Arduino via MQTT communiceert met een Python-programma om een interactieve game-ervaring te creëren. Het spel combineert sensorgegevens van de Arduino met dynamische reacties in Python.
 ## Bedradingsschema
 
-(foto van schema bedrading)
+![image](https://github.com/user-attachments/assets/c74f1546-adf7-493d-be09-2f69e09eebeb)
 
 ## Opbouw code
 
-(foto van blackbox ,...)
+![image](https://github.com/user-attachments/assets/2dd6514c-5238-438a-bd58-2b1b113cb6a6)
+
+![image](https://github.com/user-attachments/assets/5406a8c8-d2e3-4931-b803-4dd1392d2d9e)
+
+![image](https://github.com/user-attachments/assets/0045f85e-fc03-4792-a662-4b6f8f9e1e95)
 
 ## Python code 
 ### MQTT
