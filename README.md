@@ -242,7 +242,9 @@ String getMacAdress(){
 }
 ```
 
-### Maken en verzenden van topic
+### Topic
+
+**_Maken_**
 
 ```sh
 String maakTopic(){
@@ -250,7 +252,11 @@ String maakTopic(){
   String topic = "ActiveHarmony/" + mac + "/+/+/+" ;
   return topic;
 }
+```
 
+**_Verzenden_**
+
+```sh
 void loop() {
 
   char lichtwaardeStr[10]; 
@@ -275,22 +281,22 @@ void loop() {
 }
 ```
 
-### Subscribing, ontvangen en opsplitsen van topic
+**_Subscribing_**
 
 ```sh
-void split(String data, char delimiter, String result[], int maxParts) {
-    int start = 0;
-    int end = 0;
-    int index = 0;
-    
-    while ((end = data.indexOf(delimiter, start)) != -1 && index < maxParts - 1) {
-        result[index++] = data.substring(start, end);
-        start = end + 1;
-    }
-    
-    result[index] = data.substring(start);
-}
+void setup() {
+  Serial.begin(9600);
 
+  Serial.print("Subscribing to topic: ");
+  String topic = maakTopic();
+  Serial.println(topic);
+  mqttClient.subscribe(topic);
+}
+```
+
+**_Ontvangen_**
+
+```sh
 // Callback functie die wordt aangeroepen wanneer een bericht wordt ontvangen
 void onMqttMessage(int messageSize) {
   // print out the topic and some message details
@@ -308,14 +314,22 @@ void onMqttMessage(int messageSize) {
   Serial.println(payload);
   zetlicht(topic);
 }
+```
 
-void setup() {
-  Serial.begin(9600);
+**_Opsplitsen_**
 
-  Serial.print("Subscribing to topic: ");
-  String topic = maakTopic();
-  Serial.println(topic);
-  mqttClient.subscribe(topic);
+```sh
+void split(String data, char delimiter, String result[], int maxParts) {
+    int start = 0;
+    int end = 0;
+    int index = 0;
+    
+    while ((end = data.indexOf(delimiter, start)) != -1 && index < maxParts - 1) {
+        result[index++] = data.substring(start, end);
+        start = end + 1;
+    }
+    
+    result[index] = data.substring(start);
 }
 ```
 
