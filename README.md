@@ -200,6 +200,7 @@ void setup() {
   Serial.println("Verbonden!");
   Serial.print("IP-adres: ");
   Serial.println(WiFi.localIP());
+}
 ```
 
 ### MQTT
@@ -221,6 +222,9 @@ void setup() {
     while (true);
   }
   Serial.println("Verbonden met MQTT!");
+
+  mqttClient.onMessage(onMqttMessage);
+}
 ```
 
 ### MAC-adres
