@@ -202,6 +202,39 @@ def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
 **Wachten tot alle sensoren uit zijn**
 
 ### LED aansturing
+# region Alles rond aansturen van LEDs
+
+```sh
+def stuur_lichtcommando(topic) -> None:
+    #print(f"MQTT-bericht verzonden: {topic}")
+    client.publish(topic, "1")
+
+def stuur_leds(rood, groen, blauw, leds: list) -> None:
+    #print(f"Stuur R:{rood}, G:{groen}, B: {blauw} naar leds {leds}")
+    for mac in leds:
+        stuur_lichtcommando(f"ActiveHarmony/{mac}/{rood}/{groen}/{blauw}")
+
+def stuur_tijdelijk_leds(rood, groen, blauw, leds: list, duur: int) -> None:
+    stuur_leds(rood, groen, blauw, leds)
+    time.sleep(duur)
+    stuur_leds(0, 0, 0, leds)
+
+def knipper_leds(rood, groen, blauw, leds: list, aantal_keer: int, duur: int) -> None:
+    for i in range(aantal_keer):
+        stuur_tijdelijk_leds(rood, groen, blauw, leds, duur)
+
+def stuur_tijdelijk_fout(leds: list):
+    stuur_tijdelijk_leds(255, 0, 0, leds, 1)
+
+def stuur_tijdelijk_wit(leds: list):
+    stuur_tijdelijk_leds(255, 255, 255, leds, 1)
+
+def stuur_wit(leds: list):
+    stuur_leds(255, 255, 255, leds)
+
+def stuur_groen(leds: list):
+    stuur_leds(0, 255, 0, leds)
+```
 
 ### Tegelreactie afhandeling
 
