@@ -269,39 +269,62 @@ def stuur_groen(leds: list):
 ### Tegelreactie afhandeling
 
 ```sh
-def speel_spel():
-    stapvolgorde = []
-    gemaakte_fout = False
-    stap = 0
-    while gemaakte_fout == False and stap < len(referentie):
-        plaats = int(input("op welke tegel zal je staan?: "))
-        if referentie[stap] == str(plaats):
-            dictionary["arduino" + str(stap+1)] = True
-            stapvolgorde.append(str(plaats))
-            stap += 1
-        else:
-            gemaakte_fout = True
-            print("je stapt op de verkeerde tegel")
-            print(referentie)
-    return gemaakte_fout
-#spel spelen en vergelijken met de referentie 
+def do_reactie (mac, value, referentie, stap, al_correct) -> bool:
+    """
+    Speelt de reactie af op de tegel die is veranderd
+    Geeft True of False terug afhankelijk of het correct was of niet
+    """
+    # Controleer of het MAC-adres in de arduino_dict zit
+    if mac not in arduino_dict:
+        print(f"Ongeldig MAC-adres: {mac}")
+        return False, False
 
-referentie = genereer_volgorde_tegels()
-print (referentie)
-dictionary = genereer_arduino_dictionary()
-print (dictionary)   
-     
-
-volledig_spelen = False
-while volledig_spelen == False:
-    foutcontrole = speel_spel()
-    print(foutcontrole)  
-    if foutcontrole == False:
-        print("je hebt het spel perfect gespeeld")
-        volledig_spelen = True
+    # Sensor uit? Foutieve tegel
+    if value > SENSOR_TRESHOLD:
+        stuur_tijdelijk_fout([mac])
+        return False
     
-#def speel foutmuziek
-#def speel foutlichten
+    if is_sensor_correct(mac, referentie,stap):
+        # Nieuw correcte tegel op groen zetten
+        stuur_groen([mac])
+        # Vorige correcte tegels op wit zetten
+        stuur_wit(list(al_correct))
+        # Speel muziek af
+        speel_muziek(stap)
+        return True
+    else:
+        # Foutive tegel 1x op rood laten knipperen
+        stuur_tijdelijk_fout([mac])
+        # Stuur juiste volgorde licht
+        toon_juiste_volgorde(referentie)
+        return False
+
+def speel_het_spel(referentie):
+    # Speel de juiste volgorde van de tegels af
+    toon_juiste_volgorde(referentie)
+    
+    stap = 0
+
+    al_correct = set()  # Houd bij welke tegels correct zijn gespeeld
+
+    while stap < len(referentie):
+        # Wacht tot een van de tegels is veranderd
+        mac, value = wacht_op_tegel_veranderd(0.5, SENSOR_TRESHOLD)
+
+        # Reageer op de veranderde tegel
+        correct = do_reactie(mac, value, referentie, stap, al_correct)
+        print(f"Stap {stap} correct!")
+        if correct:
+            stap += 1
+            al_correct.add(mac)  # Voeg correcte tegel toe aan de set
+            print(f"Reeds correcte tegels: {len(al_correct)}")
+        else:
+            stap = 0
+            al_correct.clear()
+            print("Fout! Terug naar stap 0")
+
+    print("Je hebt het spel perfect gespeeld")
+    knipper_leds(0, 255, 0, list(al_correct), 5, 1)
 ```
 
 ### Volgorde generator voor tegels
