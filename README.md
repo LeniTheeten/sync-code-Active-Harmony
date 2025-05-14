@@ -616,15 +616,12 @@ print(verwerk_string(invoer))
 
 ### Game Logica uitgeschreven
 **Overzicht**
-Spelopzet: De speler moet een correcte volgorde van "tegels" (sensoren op Arduino's) volgen. Bij elke juiste stap speelt de muziek verder, bij fouten wordt deze gestopt en moet je opnieuw beginnen.
 
-Sensorinput via MQTT: Arduino’s sturen sensordata via MQTT. De software luistert hierop en detecteert welke tegel is ingedrukt.
-
-Muziek als feedback: Het volume van de muziek daalt over tijd en stijgt bij correcte interactie.
-
-LED-feedback: Verschillende kleuren LED’s geven correcte (groen), foute (rood) of instructieve (wit/blauw) feedback.
-
-Doel: Volg de gegenereerde volgorde van tegels foutloos om te winnen.
+- Spelopzet: De speler moet een correcte volgorde van "tegels" (sensoren op Arduino's) volgen. Bij elke juiste stap speelt de muziek verder, bij fouten wordt deze gestopt en moet je opnieuw beginnen.
+- Sensorinput via MQTT: Arduino’s sturen sensordata via MQTT. De software luistert hierop en detecteert welke tegel is ingedrukt.
+- Muziek als feedback: Het volume van de muziek daalt over tijd en stijgt bij correcte interactie.
+- LED-feedback: Verschillende kleuren LED’s geven correcte (groen), foute (rood) of instructieve (wit/blauw) feedback.
+- Doel: Volg de gegenereerde volgorde van tegels foutloos om te winnen.
 
 **Belangrijkste functies**
 - Sensor en MQTT
