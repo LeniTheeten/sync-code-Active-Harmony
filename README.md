@@ -59,19 +59,26 @@ def connect_mqtt(client, userdata, flags, rc):
         print("Verbinden mislukt")
 
 # Callback functie voor ontvangen berichten
-def on_message(client, userdata, message):
-    print(f"Bericht ontvangen op {message.topic}: {message.payload.decode()}")
-    payload_str = message.payload.decode()
+def on_mqtt_message(client, userdata, message):
+   
+    global tegel_sensor_waardes
+    
+    if message is None:
+        return
+    
+    #print(f"Bericht ontvangen {message.topic}")
 
-    try: 
-        payload_data = json.loads(payload_str)
-        arduino = payload_data.get('mac')
-        status = payload_data.get('on/off')
-
-        print(f"arduino {'mac'}")
-        print(f"status gegevens: {"on/off"}")
-    except json.JSONDecodeError:
-        print("fout bij coderen")
+    parts = message.topic.split("/")
+    if len(parts)<3:
+        print(f"Ongeldig ontvangen: {message.topic}")
+        return
+    
+    mac = parts[1]
+    try:
+        sensor_int = int(parts[2])
+        tegel_sensor_waardes[mac] = sensor_int  # Sla de sensorwaarde op in de dictionary
+    except ValueError:
+        print(f"Fout bij het omzetten van sensorwaarde naar int: {parts[2]}")
 
 # MQTT client instellen
 client = mqtt.Client()
@@ -170,6 +177,29 @@ print("alle muziekjes zijn gespeeld")
 
 ### Sensorwaarden
 **Sensorwaarden verwerken**
+
+```sh
+def on_mqtt_message(client, userdata, message):
+   
+    global tegel_sensor_waardes
+    
+    if message is None:
+        return
+    
+    #print(f"Bericht ontvangen {message.topic}")
+
+    parts = message.topic.split("/")
+    if len(parts)<3:
+        print(f"Ongeldig ontvangen: {message.topic}")
+        return
+    
+    mac = parts[1]
+    try:
+        sensor_int = int(parts[2])
+        tegel_sensor_waardes[mac] = sensor_int  # Sla de sensorwaarde op in de dictionary
+    except ValueError:
+        print(f"Fout bij het omzetten van sensorwaarde naar int: {parts[2]}")
+```
 
 **wachten op sensorwaarde verandering**
 
