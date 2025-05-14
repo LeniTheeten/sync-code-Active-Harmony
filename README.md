@@ -422,12 +422,14 @@ print(verwerk_string(invoer))
 ```
 
 ### Game logica
+```sh
 import random
 import pygame
 import time
 import threading
 from threading import Thread
 import paho.mqtt.client as mqtt
+from collections import Counter
 
 MQTT_BROKER_URL = "mqtt.eclipseprojects.io"
 MQTT_BROKER_PORT = 1883
@@ -444,7 +446,8 @@ muziek_dictionary = {
     1: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt2.mp3",
     2: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt3.mp3",
     3: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt4.mp3",
-    4: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt5.mp3"
+    4: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt5.mp3",
+    5: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt6.mp3"
 }
 #Bericht ontvangen ActiveHarmony/18:1F:3B:BD:9E:7C:/909
 #Bericht ontvangen ActiveHarmony/20:88:4E:DA:D4:D4:/886
@@ -453,7 +456,7 @@ muziek_dictionary = {
 #Bericht ontvangen ActiveHarmony/4C:F1:77:1B:5A:E0:/946
 
 #arduino_dict = {'18:1F:3B:BD:9E:7C': 'mac1', '20:88:4E:DA:D4:D4': 'mac2', '74:C7:7A:1B:5A:E0': 'mac3', '1C:31:7B:1B:5A:E0': 'mac4', '4C:F1:77:1B:5A:E0': 'mac5'}
-arduino_dict = {'20:88:4E:DA:D4:D4': 'mac1', '74:C7:7A:1B:5A:E0': 'mac2', '1C:31:7B:1B:5A:E0': 'mac3', '4C:F1:77:1B:5A:E0': 'mac4'}
+arduino_dict = {'20:88:4E:DA:D4:D4': 'mac1', '74:C7:7A:1B:5A:E0': 'mac2', '4C:F1:77:1B:5A:E0': 'mac3', '1C:31:7B:1B:5A:E0': 'mac4'}
 # Hou globaal de sensorwaarden bij, per Arduino
 # Initialiseer ze allemaal op -1
 tegel_sensor_waardes = dict()
@@ -462,11 +465,18 @@ for mac in arduino_dict.keys():
 
 # Functie die de volgorde van de tegels genereert, afhankelijk van het aantal ingevoerde Arduino's
 def genereer_volgorde_tegels():
-    Volgorde = list(arduino_dict.values())  # Maak een lijst van tegels afhankelijk van het aantal Arduino's
-    random.shuffle(Volgorde)  # Willekeurig schudden van de volgorde
-    print(f"Volgorde van tegels: {Volgorde}")
-    return Volgorde
+    tegel_namen = list(arduino_dict.values())
+    volgorde = []
+    vorige = None
 
+    while len(volgorde) < 6:
+        keuze = random.choice(tegel_namen)
+        if keuze != vorige:
+            volgorde.append(keuze)
+            vorige = keuze
+
+    print(f"Volgorde van tegels: {volgorde}")
+    return volgorde
 
 # Functie die het spel afspeelt
 def speel_muziek(muziek_index) -> None:
@@ -512,6 +522,10 @@ def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
     """
     Deze code wacht op tegel verandering
     """
+    while any (sensor_waarde < sensor_max for sensor_waarde in tegel_sensor_waardes.values()):
+        print("wacht tot alle tegels losgelaten zijn")
+        time.sleep(0.1)
+
     vorige_toestand = dict(tegel_sensor_waardes)  # Maak een kopie van de huidige toestand
 
     while True:
@@ -553,9 +567,10 @@ def knipper_leds(rood, groen, blauw, leds: list, aantal_keer: int, duur: int) ->
 
 def stuur_fout(leds: list):
     knipper_leds(255,0,0,leds,5,1)
+    time.sleep (1)
 
 def stuur_tijdelijk_wit(leds: list):
-    stuur_tijdelijk_leds(255,255,255, leds, 5)
+    stuur_tijdelijk_leds(255,255,255, leds, 3)
 
 def stuur_wit(leds: list):
     stuur_leds(255, 255, 255, leds)
@@ -574,7 +589,9 @@ def do_reactie (mac, value, referentie, stap, al_correct) -> bool:
         print(f"Ongeldig MAC-adres: {mac}")
         return False, False
     if value > sensor_max:
-        stuur_fout([mac])
+        stuur_fout(list(arduino_dict.keys()))
+        time.sleep(1)
+        wacht_op_alles_uit()
         return False
     
     if sensor_correct(mac, referentie,stap):
@@ -583,15 +600,17 @@ def do_reactie (mac, value, referentie, stap, al_correct) -> bool:
         time.sleep(2)
             #al_correct.add(mac)
         #if al_correct:
-        stuur_wit([mac])
-        stuur_wit(list(al_correct))
+        #stuur_wit([mac])
+        #stuur_wit(list(al_correct))
         speel_muziek(stap)
         return True
     else:
-        stuur_fout([mac])
+        stuur_fout(list(arduino_dict.keys()))
+        time.sleep(1)
         #wacht tot er nergens meer op gestaan wordt
         wacht_op_alles_uit()
-        volgorde_licht(referentie)
+        #volgorde_licht(referentie)
+        #print(referentie)
         return False
 
 def krijg_sensors_die_aanliggen() -> list:
@@ -621,6 +640,7 @@ def volgorde_licht(referentie):
         for mac_adres,naam in arduino_dict.items():
             if naam == mac_naam:
                 stuur_tijdelijk_wit([mac_adres])
+                time.sleep (2)
 
 def opstart_spel():
     #stuur_leds(0,255,0,['18:1F:3B:BD:9E:7C'])
@@ -658,6 +678,7 @@ def speel_het_spel(referentie):
             stap = 0
             al_correct.clear()
             print("Fout! Terug naar stap 0")
+            time.sleep (5)
             print(referentie)
             volgorde_licht(referentie)
 
@@ -688,8 +709,7 @@ if __name__ == "__main__":
 
     while not volledig_gespeeld:
         volledig_gespeeld = speel_het_spel(referentie)
-
-
+```
 
 ## Arduino code 
 
