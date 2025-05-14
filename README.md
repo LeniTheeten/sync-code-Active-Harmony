@@ -181,6 +181,22 @@ print("alle muziekjes zijn gespeeld")
 
 ### Volgorde generator voor tegels
 
+```sh
+import random
+
+random_referentie = ""
+
+for cijfer in range (6):
+    random_cijfer = random.randint(1,6)
+    print (random_cijfer)
+    random_referentie += str (random_cijfer)
+    print (random_referentie)
+
+referentie_lijst = list (random_referentie)
+
+print (referentie_lijst)
+```
+
 ### Game logica
 
 ### Visual feedback
