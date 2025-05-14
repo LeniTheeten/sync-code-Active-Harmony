@@ -1,4 +1,4 @@
-# Sync-code-Active-Harmony
+s# Sync-code-Active-Harmony
 Dit is een project waarin een Arduino via MQTT communiceert met een Python-programma om een interactieve game-ervaring te creëren. Het spel combineert sensorgegevens van de Arduino met dynamische reacties in Python.
 ## Bedradingsschema
 
@@ -144,24 +144,28 @@ Connectie_Wifi = check_wifi()
 
 ```sh
 import pygame
-#importeer de pygame-bibliotheek die eerder geinstalleerd werd
 pygame.mixer.init()
-#zorgt voor de audio
-pygame.mixer.music.load("Testmuziek.mp3")
-#laad het muziekbestand
-pygame.mixer.music.play()
 
-#dit en het muziekbestand moeten in dezelfde map staan
-print("test")
-actie = input()
-if actie =="x":
-    if pygame.mixer.music.get_busy():
-        #laat de muziek spelen
-        pygame.mixer.music.pause()
-        print("Muziek gepauzeerd. Druk op Enter(x) om verder te spelen")
-    else:
-        pygame.mixer.music.unpause()
-        print("Muziek hervt. Druk op Enter(x) om te pauzeren")
+voorbeeld_volgorde = [1,2,3,4,5,6]
+
+muziek_dictionary = {
+    1: "BeatIt1.mp3",
+    2: "BeatIt2.mp3",
+    3: "BeatIt3.mp3",
+    4: "BeatIt4.mp3",
+    5: "BeatIt5.mp3",
+    6: "BeatIt6.mp3"
+}
+def speel_muziek(muziek_bestand):
+    pygame.mixer.music.load(muziek_bestand)
+    pygame.mixer.music.play()
+
+for plaats in voorbeeld_volgorde:
+    muziek_bestand = muziek_dictionary [plaats]
+    print(f"Speel muziek {muziek_bestand} voor plaats {plaats}")
+    speel_muziek(muziek_bestand)
+
+print("alle muziekjes zijn gespeeld")
 ```
 
 ### Sensorwaarden
