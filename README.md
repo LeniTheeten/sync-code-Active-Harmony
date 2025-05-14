@@ -191,16 +191,36 @@ def genereer_volgorde_tegels():
         random_referentie += str (random_cijfer)
     referentie_lijst = list (random_referentie)
     return (referentie_lijst)
-referentie = genereer_volgorde_tegels()
-print (referentie)
 #random volgorde van tegels genereren
 
-dict_arduino = {}
-for aantal in range (len(referentie)):
-    hoeveelste_arduino = "arduino" + str(aantal+1)
-    waarde = False
-    dict_arduino [hoeveelste_arduino] = waarde
-    print (dict_arduino)
+def genereer_arduino_dictionary():
+    dict_arduino = {}
+    for aantal in range (len(referentie)):
+        hoeveelste_arduino = "arduino" + str(aantal+1)
+        waarde = False
+        dict_arduino [hoeveelste_arduino] = waarde
+    return (dict_arduino)
+#dictionary aantal arduino's
+
+referentie = genereer_volgorde_tegels()
+print (referentie)
+dictionary = genereer_arduino_dictionary()
+print (dictionary)
+
+
+stapvolgorde = []
+gemaakte_fout = False
+stap = 0
+while gemaakte_fout == False and stap < len(referentie):
+    plaats = int(input("op welke tegel zal je staan?: "))
+    if referentie[stap] == str(plaats):
+        dictionary["arduino" + str(stap+1)] = True
+        stapvolgorde.append(str(plaats))
+        stap += 1
+    else:
+        gemaakte_fout = True
+        print("je stapt op de verkeerde tegel")
+        print(referentie)
 ```
 
 ### Game logica
