@@ -184,17 +184,23 @@ print("alle muziekjes zijn gespeeld")
 ```sh
 import random
 
-random_referentie = ""
+def genereer_volgorde_tegels():
+    random_referentie = ""
+    for cijfer in range (6):
+        random_cijfer = random.randint(1,6)
+        random_referentie += str (random_cijfer)
+    referentie_lijst = list (random_referentie)
+    return (referentie_lijst)
+referentie = genereer_volgorde_tegels()
+print (referentie)
+#random volgorde van tegels genereren
 
-for cijfer in range (6):
-    random_cijfer = random.randint(1,6)
-    print (random_cijfer)
-    random_referentie += str (random_cijfer)
-    print (random_referentie)
-
-referentie_lijst = list (random_referentie)
-
-print (referentie_lijst)
+dict_arduino = {}
+for aantal in range (len(referentie)):
+    hoeveelste_arduino = "arduino" + str(aantal+1)
+    waarde = False
+    dict_arduino [hoeveelste_arduino] = waarde
+    print (dict_arduino)
 ```
 
 ### Game logica
