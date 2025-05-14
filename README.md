@@ -59,26 +59,23 @@ def connect_mqtt(client, userdata, flags, rc):
         print("Verbinden mislukt")
 
 # Callback functie voor ontvangen berichten
-def on_mqtt_message(client, userdata, message):
-   
+def on_message(client, userdata, message):
     global tegel_sensor_waardes
-    
     if message is None:
         return
     
     #print(f"Bericht ontvangen {message.topic}")
-
     parts = message.topic.split("/")
     if len(parts)<3:
         print(f"Ongeldig ontvangen: {message.topic}")
         return
-    
     mac = parts[1]
     try:
         sensor_int = int(parts[2])
-        tegel_sensor_waardes[mac] = sensor_int  # Sla de sensorwaarde op in de dictionary
+        tegel_sensor_waardes[mac] = sensor_int # Opslaan in variabele
     except ValueError:
         print(f"Fout bij het omzetten van sensorwaarde naar int: {parts[2]}")
+    #print(received_message)
 
 # MQTT client instellen
 client = mqtt.Client()
@@ -174,6 +171,128 @@ for plaats in voorbeeld_volgorde:
 
 print("alle muziekjes zijn gespeeld")
 ```
+**Muziek in vaste map**
+
+```sh
+muziek_map = os.path.join(os.path.dirname(__file__), "muziek")
+
+#muziek kan gelijk waar op de computer worden gevonden
+muziek_dictionary = {
+    i: os.path.join(muziek_map, f"Muziek{i+1}.mp3") for i in range(3)
+```
+
+**Muziekfragment opvragen**
+
+```sh
+def vraag_muziekfragment():
+    global geselecteerd_muziek_index
+
+    print("Kies een muziekfragment:")
+    for index, path in muziek_dictionary.items():
+        print(f"{index}: {path}")
+
+    while True:
+        try:
+            keuze = int(input("Geef het nummer van het gewenste muziekfragment: "))
+            if keuze in muziek_dictionary:
+                geselecteerd_muziek_index = keuze
+                print(f"Gekozen muziekfragment: {muziek_dictionary[keuze]}")
+                break
+            else:
+                print("Ongeldige keuze. Kies een geldig nummer.")
+        except ValueError:
+            print("Ongeldige invoer. Geef een getal in.")
+```
+
+**opstart muziek**
+
+```sh
+def speel_muziek() -> None:
+    global is_muziek_bezig
+    is_muziek_bezig = True #blokkeer berichtverwerking
+    huidig_volume = 1.0
+    print(f"Speel {muziek_dictionary[geselecteerd_muziek_index]}")
+    start_muziek() #muziek liep in zichzelf vast, nu blijft deze herhalen
+    pas_volume_geleidelijk_aan(0.5)
+def stop_muziek():
+    pygame.mixer.music.stop() #stop de muziek
+    global stop_thread
+    stop_thread = True  # Stop de thread die het volume aanpast
+    if volume_thread and volume_thread.is_alive():
+        volume_thread.join()
+    stop_thread = False
+def start_muziek():
+    global huidig_volume
+    print(f"Speel {muziek_dictionary[geselecteerd_muziek_index]}")
+    pygame.mixer.music.load(muziek_dictionary[geselecteerd_muziek_index])
+    pygame.mixer.music.play(-1)  # Muziek herhaalt zichzelf
+    pas_volume_geleidelijk_aan(1.0)  # Zorg dat volume vanaf het begin juist is
+```
+
+**geluidverandering**
+
+```sh
+def start_volume_monitor(start_time):
+    def monitor():
+        while pygame.mixer.music.get_busy():
+            if not volume_monitor_paused.is_set():
+                wacht_tijd = time.time() - start_time
+                pas_volume_aan(wacht_tijd)
+            time.sleep(1)
+    Thread(target=monitor, daemon=True).start()
+
+def pas_volume_geleidelijk_aan(doelvolume, stapgrootte=0.02, interval=0.1):
+    global huidig_volume, volume_thread, stop_thread
+
+    def volume_worker():
+        global huidig_volume, stop_thread
+        while not stop_thread:
+            with volume_lock:
+                if abs(huidig_volume - doelvolume) < stapgrootte:
+                    huidig_volume = doelvolume
+                    pygame.mixer.music.set_volume(huidig_volume)
+                    break
+                if huidig_volume > doelvolume:
+                    huidig_volume -= stapgrootte
+                else:
+                    huidig_volume += stapgrootte
+                pygame.mixer.music.set_volume(huidig_volume)
+            time.sleep(interval)
+
+    # Stop eventueel lopende thread
+    stop_thread = True
+    if volume_thread and volume_thread.is_alive():
+        volume_thread.join()
+    stop_thread = False
+
+    # Start nieuwe thread
+    volume_thread = threading.Thread(target=volume_worker)
+    volume_thread.start()
+
+def pas_volume_aan(wacht_tijd):
+    if wacht_tijd == 0:
+        doelvolume = 1.0
+        stapgrootte = 1
+        interval = 0.05
+    else:
+        doelvolume = max(0.5, 1.0 - (wacht_tijd / 30))
+        stapgrootte = 0.5
+        interval = 0.1
+
+    pas_volume_geleidelijk_aan(doelvolume, stapgrootte, interval)
+
+
+
+def connect_mqtt(client, userdata, flags, rc):
+    if rc == 0:
+        print("Geconnecteerd")
+        mqtt_connected.set()  # verbinding is gelukt
+        topic = f"ActiveHarmony/+/+"
+        client.subscribe(topic)
+        print(f"Geabonneerd op topic: {topic}")  # Abonneer je direct na het verbinden
+    else:
+        print("Verbinden mislukt")
+```
 
 ### Sensorwaarden
 **Sensorwaarden verwerken**
@@ -205,9 +324,13 @@ def on_mqtt_message(client, userdata, message):
 
 ```sh
 def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
-    """
-    Deze code wacht op tegel verandering
-    """
+   
+    start_time = time.time()
+
+    while any (sensor_waarde < sensor_max for sensor_waarde in tegel_sensor_waardes.values()):
+        print("wacht tot alle tegels losgelaten zijn")
+        time.sleep(0.1)
+
     vorige_toestand = dict(tegel_sensor_waardes)  # Maak een kopie van de huidige toestand
 
     while True:
@@ -225,10 +348,25 @@ def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
             waarde = tegels_met_hun_veranderings_waarde[mac]
             if waarde > min_veranderings_waarde:
                 print(f"Sensor {mac} heeft een verandering van {waarde}")
+                wacht_tijd = time.time() - start_time
+                pas_volume_aan (wacht_tijd)
                 return mac, tegel_sensor_waardes[mac]
             time.sleep(timeout)
 ```
-            
+**Wachten op startknop om te beginnen**
+
+```sh
+def wacht_op_start_knop():
+    #blokkeer verder spelverloop tot de gebruiker 'start typt'
+    while True:
+        user_input = input("Typ 'start' om het spel te beginnen: ").strip().lower()
+        if user_input == "start":
+            print("Start bevestigd! Voorbeeld wordt getoond.")
+            break
+        else:
+            print("Ongeldige invoer. Typ exact 'start' om te beginnen.")
+```
+
 **Wachten tot alle sensoren uit zijn**
 
 ```sh
@@ -354,46 +492,25 @@ def speel_het_spel(referentie):
 ### Volgorde generator voor tegels
 
 ```sh
-import random
-
 def genereer_volgorde_tegels():
-    random_referentie = ""
-    for cijfer in range (6):
-        random_cijfer = random.randint(1,6)
-        random_referentie += str (random_cijfer)
-    referentie_lijst = list (random_referentie)
-    return (referentie_lijst)
-#random volgorde van tegels genereren
-
-def genereer_arduino_dictionary():
-    dict_arduino = {}
-    for aantal in range (len(referentie)):
-        hoeveelste_arduino = "arduino" + str(aantal+1)
-        waarde = False
-        dict_arduino [hoeveelste_arduino] = waarde
-    return (dict_arduino)
-#dictionary aantal arduino's
-
-referentie = genereer_volgorde_tegels()
-print (referentie)
-dictionary = genereer_arduino_dictionary()
-print (dictionary)
-
-
-stapvolgorde = []
-gemaakte_fout = False
-stap = 0
-while gemaakte_fout == False and stap < len(referentie):
-    plaats = int(input("op welke tegel zal je staan?: "))
-    if referentie[stap] == str(plaats):
-        dictionary["arduino" + str(stap+1)] = True
-        stapvolgorde.append(str(plaats))
-        stap += 1
-    else:
-        gemaakte_fout = True
-        print("je stapt op de verkeerde tegel")
-        print(referentie)
+    #Volgorde = list(arduino_dict.values())  # Maak een lijst van tegels afhankelijk van het aantal Arduino's
+    #random.shuffle(Volgorde)  # Willekeurig schudden van de volgorde
+    #print(f"Volgorde van tegels: {Volgorde}")
+    Volgorde = []
+    max_per_mac = 3
+    while len(Volgorde) < 6:
+        getal = random.randint(1, 4)
+        mac = f"mac{getal}"
+        if len(Volgorde) == 0 or Volgorde[-1] != mac:
+            telling = Counter(Volgorde)
+            if telling[mac] < max_per_mac:
+                Volgorde.append(mac)
+    
+    print(f"Volgorde van tegels: {Volgorde}")
+    return Volgorde
+#geen 2x dezelfde tegel na elkaar 
 ```
+
 ### Visual feedback
 
 ```sh
