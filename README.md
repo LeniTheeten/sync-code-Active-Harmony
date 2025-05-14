@@ -16,7 +16,7 @@ Dit is een project waarin een Arduino via MQTT communiceert met een Python-progr
 ### MQTT
 **MQTT verbinding opzetten**
 
-```sh
+```python
 print("file")
 import paho.mqtt.client as mqtt
 #mqtt op een bepaalde broker instellen
@@ -42,7 +42,7 @@ print("achter")
 ```
 
 **MQTT-berichten ontvangen**
-```sh
+```python
 import json
 #payload omzetten naar iets leesbaar
 
@@ -91,7 +91,7 @@ client.loop_forever()  # Dit houdt het script draaiende
 ```
 
 **MQTT-berichten verzenden**
-```sh
+```python
 import paho.mqtt.client as mqtt
 #mqtt op een bepaalde broker instellen
 #later zal de broker de rasberri zelf zijn
@@ -128,7 +128,7 @@ while True:
 ```
 
 **Wifi verbinding**
-```sh
+```python
 #IPv4 Address. . . . . . . . . . . : 192.168.0.198
 import socket
 #netwerkverbinding testen
@@ -146,7 +146,7 @@ Connectie_Wifi = check_wifi()
 
 ### Muziek afspelen via computer
 
-```sh
+```python
 import pygame
 pygame.mixer.init()
 
@@ -173,7 +173,7 @@ print("alle muziekjes zijn gespeeld")
 ```
 **Muziek in vaste map**
 
-```sh
+```python
 muziek_map = os.path.join(os.path.dirname(__file__), "muziek")
 
 #muziek kan gelijk waar op de computer worden gevonden
@@ -183,7 +183,7 @@ muziek_dictionary = {
 
 **Muziekfragment opvragen**
 
-```sh
+```python
 def vraag_muziekfragment():
     global geselecteerd_muziek_index
 
@@ -206,7 +206,7 @@ def vraag_muziekfragment():
 
 **opstart muziek**
 
-```sh
+```python
 def speel_muziek() -> None:
     global is_muziek_bezig
     is_muziek_bezig = True #blokkeer berichtverwerking
@@ -233,7 +233,7 @@ def start_muziek():
 
 **geluidverandering**
 
-```sh
+```python
 def start_volume_monitor(start_time):
     def monitor():
         while pygame.mixer.music.get_busy():
@@ -299,7 +299,7 @@ def connect_mqtt(client, userdata, flags, rc):
 ### Sensorwaarden
 **Sensorwaarden verwerken**
 
-```sh
+```python
 def on_mqtt_message(client, userdata, message):
    
     global tegel_sensor_waardes
@@ -324,7 +324,7 @@ def on_mqtt_message(client, userdata, message):
 
 **wachten op sensorwaarde verandering**
 
-```sh
+```python
 def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
    
     start_time = time.time()
@@ -357,7 +357,7 @@ def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
 ```
 **Wachten op startknop om te beginnen**
 
-```sh
+```python
 def wacht_op_start_knop():
     #blokkeer verder spelverloop tot de gebruiker 'start typt'
     while True:
@@ -371,7 +371,7 @@ def wacht_op_start_knop():
 
 **Wachten tot alle sensoren uit zijn**
 
-```sh
+```python
 def krijg_sensors_die_aanliggen() -> list:
     """
     Verkrijg een lijst van sensoren die aan staan
@@ -415,7 +415,7 @@ def wacht_op_alle_rode_lichten_uit(leds: list):
 
 ### LED aansturing
 
-```sh
+```python
 def stuur_lichtcommando(topic) -> None:
     #print(f"MQTT-bericht verzonden: {topic}")
     client.publish(topic, "1")
@@ -449,7 +449,7 @@ def stuur_groen(leds: list):
 
 ### Tegelreactie afhandeling
 
-```sh
+```python
 def do_reactie (mac, value, referentie, stap, al_correct, wacht_tijd):
     # Controleer of het MAC-adres in de arduino_dict zit
     if value == 1:
@@ -554,7 +554,7 @@ def start_muziek_en_spel_loop(referentie):
 
 ### Volgorde generator voor tegels
 
-```sh
+```python
 def genereer_volgorde_tegels():
     #Volgorde = list(arduino_dict.values())  # Maak een lijst van tegels afhankelijk van het aantal Arduino's
     #random.shuffle(Volgorde)  # Willekeurig schudden van de volgorde
@@ -587,7 +587,7 @@ def volgorde_licht(referentie):
 
 ### Visual feedback
 
-```sh
+```python
 def verwerk_string(text):
     rood = 255
     groen = 0
@@ -681,7 +681,7 @@ String getMacAdress(){
 
 ### Topic
 
-**_Maken_**
+**Maken**
 
 ```sh
 String maakTopic(){
@@ -691,7 +691,7 @@ String maakTopic(){
 }
 ```
 
-**_Verzenden_**
+**Verzenden**
 
 ```sh
 void loop() {
@@ -718,7 +718,7 @@ void loop() {
 }
 ```
 
-**_Subscribing_**
+**Subscribing**
 
 ```sh
 void setup() {
@@ -731,7 +731,7 @@ void setup() {
 }
 ```
 
-**_Ontvangen_**
+**Ontvangen**
 
 ```sh
 // Callback functie die wordt aangeroepen wanneer een bericht wordt ontvangen
@@ -753,7 +753,7 @@ void onMqttMessage(int messageSize) {
 }
 ```
 
-**_Opsplitsen_**
+**Opsplitsen**
 
 ```sh
 void split(String data, char delimiter, String result[], int maxParts) {
@@ -836,7 +836,7 @@ void loop() {
 ### Python
 **Game**
 
-```sh
+```python
 import random
 import os
 import pygame
@@ -1299,7 +1299,7 @@ if __name__ == "__main__":
 Dit werd ontwikkeld omdat de Arduino Nano 33 IoT's niet altijd allemaal beschikbaar waren. De Simulate Sensor krijgt een kleur als output en geeft vervolgens een waarde van 100 of 1000, waarmee de sensorwaarden van de Arduino's worden gesimuleerd.
 De sensor maakt gebruik van dezelfde MQTT-server als de rest van de code, waarop ook de Arduino's verbonden zijn.
 
-```sh
+```python
 import curses
 import json
 import sys
