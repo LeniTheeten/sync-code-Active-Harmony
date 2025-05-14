@@ -624,38 +624,38 @@ print(verwerk_string(invoer))
 - Doel: Volg de gegenereerde volgorde van tegels foutloos om te winnen.
 
 **Belangrijkste functies**
-- Sensor en MQTT
-  connect_mqtt(): Verbindt met de MQTT broker en abonneert op alle sensor topics.
-  on_message(): Verwerkt inkomende berichten van sensoren en slaat hun waarden op in tegel_sensor_waardes.
+Sensor en MQTT:
+- connect_mqtt(): Verbindt met de MQTT broker en abonneert op alle sensor topics.
+- on_message(): Verwerkt inkomende berichten van sensoren en slaat hun waarden op in tegel_sensor_waardes.
 
-- Spelverloop
-  genereer_volgorde_tegels(): Genereert willekeurige, maar geldige volgorde van tegels (max 3x herhaling, geen dubbele achter elkaar).
-  speel_het_spel(): Coördineert het volledige spelverloop van begin tot einde.
-  start_muziek_en_spel_loop(): De hoofdloop waarin spelers tegel per tegel de volgorde volgen.
+Spelverloop:
+- genereer_volgorde_tegels(): Genereert willekeurige, maar geldige volgorde van tegels (max 3x herhaling, geen dubbele achter elkaar).
+- speel_het_spel(): Coördineert het volledige spelverloop van begin tot einde.
+- start_muziek_en_spel_loop(): De hoofdloop waarin spelers tegel per tegel de volgorde volgen.
 
-- Muziek & Geluid
-  speel_muziek(): Start het gekozen muziekfragment en zet het volume op standaardniveau.
-  start_volume_monitor(): Past het volume continu aan op basis van tijdsverloop en interactie.
-  pas_volume_geleidelijk_aan(): Laat het muziekvolume langzaam stijgen of dalen.
-  stop_muziek()/start_muziek(): Start of stopt het afspelen van muziek.
+Muziek & Geluid:
+- speel_muziek(): Start het gekozen muziekfragment en zet het volume op standaardniveau.
+- start_volume_monitor(): Past het volume continu aan op basis van tijdsverloop en interactie.
+- pas_volume_geleidelijk_aan(): Laat het muziekvolume langzaam stijgen of dalen.
+- stop_muziek()/start_muziek(): Start of stopt het afspelen van muziek.
 
-- Inputverwerking
-  wacht_op_tegel_veranderd(): Wacht tot een sensor (tegel) genoeg is veranderd (ingedrukt).
-  do_reactie(): Verwerkt de actie van de speler en checkt of deze correct is. Bij fout stopt muziek + reset.
-  sensor_correct(): Controleert of de juiste tegel werd gekozen op het juiste moment.
+Inputverwerking:
+- wacht_op_tegel_veranderd(): Wacht tot een sensor (tegel) genoeg is veranderd (ingedrukt).
+- do_reactie(): Verwerkt de actie van de speler en checkt of deze correct is. Bij fout stopt muziek + reset.
+- sensor_correct(): Controleert of de juiste tegel werd gekozen op het juiste moment.
 
-- LED-feedback
-  stuur_leds()/stuur_tijdelijk_leds(): Stuurt kleurcommando's naar Arduino's.
-  stuur_fout(), stuur_groen(), stuur_blauw(), etc.: Specifieke kleurfeedback op gebeurtenissen.
-  volgorde_licht(): Toont het voorbeeld van de juiste volgorde met witte lichten.
+LED-feedback:
+- stuur_leds()/stuur_tijdelijk_leds(): Stuurt kleurcommando's naar Arduino's.
+- stuur_fout(), stuur_groen(), stuur_blauw(), etc.: Specifieke kleurfeedback op gebeurtenissen.
+- volgorde_licht(): Toont het voorbeeld van de juiste volgorde met witte lichten.
 
-- Reset & voorbereiding
-  opstart_spel()/wacht_op_alles_uit(): Zorgt dat alle sensoren vrij zijn bij de start.
-  wacht_op_start_knop(): Blokkeert het spel tot de gebruiker “start” typt.
+Reset & voorbereiding
+- opstart_spel()/wacht_op_alles_uit(): Zorgt dat alle sensoren vrij zijn bij de start.
+- wacht_op_start_knop(): Blokkeert het spel tot de gebruiker “start” typt.
 
-- Einde
-  verwerk_einde_spel(): Toont eindscore en viert succesvolle afloop met groene LEDs.
-  bereken_score(): Berekent score op basis van aantal fouten.
+Einde
+- verwerk_einde_spel(): Toont eindscore en viert succesvolle afloop met groene LEDs.
+- bereken_score(): Berekent score op basis van aantal fouten.
   
 ## Arduino code 
 
