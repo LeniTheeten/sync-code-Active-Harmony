@@ -179,6 +179,42 @@ print("alle muziekjes zijn gespeeld")
 
 ### Tegelreactie afhandeling
 
+```sh
+def speel_spel():
+    stapvolgorde = []
+    gemaakte_fout = False
+    stap = 0
+    while gemaakte_fout == False and stap < len(referentie):
+        plaats = int(input("op welke tegel zal je staan?: "))
+        if referentie[stap] == str(plaats):
+            dictionary["arduino" + str(stap+1)] = True
+            stapvolgorde.append(str(plaats))
+            stap += 1
+        else:
+            gemaakte_fout = True
+            print("je stapt op de verkeerde tegel")
+            print(referentie)
+    return gemaakte_fout
+#spel spelen en vergelijken met de referentie 
+
+referentie = genereer_volgorde_tegels()
+print (referentie)
+dictionary = genereer_arduino_dictionary()
+print (dictionary)   
+     
+
+volledig_spelen = False
+while volledig_spelen == False:
+    foutcontrole = speel_spel()
+    print(foutcontrole)  
+    if foutcontrole == False:
+        print("je hebt het spel perfect gespeeld")
+        volledig_spelen = True
+    
+#def speel foutmuziek
+#def speel foutlichten
+```
+
 ### Volgorde generator voor tegels
 
 ```sh
