@@ -263,6 +263,31 @@ while gemaakte_fout == False and stap < len(referentie):
 
 ### Visual feedback
 
+```sh
+def verwerk_string(text):
+    rood = 255
+    groen = 0
+    blauw = 0
+    
+    delen = text.split("/")
+    if len(delen) != 3:
+        return "ongeldige invoer"
+    
+    mac_adres = delen[1]
+    waarde = int(delen[2])
+
+    if waarde <= 30:
+        arduino = f"Arduino: {mac_adres}"
+        rgb_kleur = f"{rood},{groen},{blauw}"
+        #de bijhorende arduino + mac adres uit de dictionary worden gehaald
+        return f"{arduino}/{rgb_kleur}"
+    else:
+        return False
+    
+invoer = "tekst/22:34:4A:69/40"
+print(verwerk_string(invoer))
+```
+
 ## Arduino code 
 
 ### Wifi
