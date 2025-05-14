@@ -231,6 +231,30 @@ def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
             
 **Wachten tot alle sensoren uit zijn**
 
+```sh
+def krijg_sensors_die_aanliggen() -> list:
+    """
+    Verkrijg een lijst van sensoren die aan staan
+    """
+    sensors_die_aanliggen = []
+    for mac, sensor_waarde in tegel_sensor_waardes.items():
+        if sensor_waarde < SENSOR_TRESHOLD:
+            sensors_die_aanliggen.append(mac)
+    return sensors_die_aanliggen
+
+def wacht_op_alles_uit():
+    """
+    Blijf wachten tot alle sensoren zijn uitgeschakeld
+    Ondertussen worden de sensoren die aan staan rood gekleurd
+    """
+    sensors_aan = krijg_sensors_die_aanliggen()
+    while sensors_aan:
+        print(f"Wachten tot alles uit is. Deze sensoren loggen nog aan: {sensors_aan}")
+        stuur_tijdelijk_fout(sensors_aan)
+        time.sleep(1)
+        sensors_aan = krijg_sensors_die_aanliggen()
+```
+
 ### LED aansturing
 # region Alles rond aansturen van LEDs
 
