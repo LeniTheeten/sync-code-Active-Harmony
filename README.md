@@ -173,6 +173,32 @@ print("alle muziekjes zijn gespeeld")
 
 **wachten op sensorwaarde verandering**
 
+```sh
+def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
+    """
+    Deze code wacht op tegel verandering
+    """
+    vorige_toestand = dict(tegel_sensor_waardes)  # Maak een kopie van de huidige toestand
+
+    while True:
+        # Bereken van alle tegels hoe veel ze veranderd zijn
+        tegels_met_hun_veranderings_waarde = dict()
+
+        for mac, sensor_waarde in tegel_sensor_waardes.items():
+            if mac in vorige_toestand and sensor_waarde != vorige_toestand[mac]:
+                verschil = abs(sensor_waarde - vorige_toestand[mac])
+                tegels_met_hun_veranderings_waarde[mac] = verschil
+
+        # Vind de tegel en de grootste verandering
+        if tegels_met_hun_veranderings_waarde:
+            mac = max(tegels_met_hun_veranderings_waarde, key=tegels_met_hun_veranderings_waarde.get)
+            waarde = tegels_met_hun_veranderings_waarde[mac]
+            if waarde > min_veranderings_waarde:
+                print(f"Sensor {mac} heeft een verandering van {waarde}")
+                return mac, tegel_sensor_waardes[mac]
+            time.sleep(timeout)
+```
+            
 **Wachten tot alle sensoren uit zijn**
 
 ### LED aansturing
