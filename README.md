@@ -12,6 +12,8 @@ Dit is een project waarin een Arduino via MQTT communiceert met een Python-progr
 
 ![image](https://github.com/user-attachments/assets/0045f85e-fc03-4792-a662-4b6f8f9e1e95)
 
+De bovenstaande afbeeldingen tonen de basislogica die als fundament dient voor de werking van het volledige spel. Ze geven een overzicht van de kernstructuur en algoritmes waarop alle verdere functies zijn gebouwd. De uiteindelijke, volledige codes zijn onderaan deze pagina te vinden.
+
 ## Python code 
 ### MQTT
 **MQTT verbinding opzetten**
@@ -613,7 +615,51 @@ print(verwerk_string(invoer))
 ```
 
 ### Game Logica uitgeschreven
+**Overzicht**
+Spelopzet: De speler moet een correcte volgorde van "tegels" (sensoren op Arduino's) volgen. Bij elke juiste stap speelt de muziek verder, bij fouten wordt deze gestopt en moet je opnieuw beginnen.
 
+Sensorinput via MQTT: Arduino’s sturen sensordata via MQTT. De software luistert hierop en detecteert welke tegel is ingedrukt.
+
+Muziek als feedback: Het volume van de muziek daalt over tijd en stijgt bij correcte interactie.
+
+LED-feedback: Verschillende kleuren LED’s geven correcte (groen), foute (rood) of instructieve (wit/blauw) feedback.
+
+Doel: Volg de gegenereerde volgorde van tegels foutloos om te winnen.
+
+**Belangrijkste functies**
+- Sensor en MQTT
+  connect_mqtt(): Verbindt met de MQTT broker en abonneert op alle sensor topics.
+  on_message(): Verwerkt inkomende berichten van sensoren en slaat hun waarden op in tegel_sensor_waardes.
+
+- Spelverloop
+  genereer_volgorde_tegels(): Genereert willekeurige, maar geldige volgorde van tegels (max 3x herhaling, geen dubbele achter elkaar).
+  speel_het_spel(): Coördineert het volledige spelverloop van begin tot einde.
+  start_muziek_en_spel_loop(): De hoofdloop waarin spelers tegel per tegel de volgorde volgen.
+
+- Muziek & Geluid
+  speel_muziek(): Start het gekozen muziekfragment en zet het volume op standaardniveau.
+  start_volume_monitor(): Past het volume continu aan op basis van tijdsverloop en interactie.
+  pas_volume_geleidelijk_aan(): Laat het muziekvolume langzaam stijgen of dalen.
+  stop_muziek()/start_muziek(): Start of stopt het afspelen van muziek.
+
+- Inputverwerking
+  wacht_op_tegel_veranderd(): Wacht tot een sensor (tegel) genoeg is veranderd (ingedrukt).
+  do_reactie(): Verwerkt de actie van de speler en checkt of deze correct is. Bij fout stopt muziek + reset.
+  sensor_correct(): Controleert of de juiste tegel werd gekozen op het juiste moment.
+
+- LED-feedback
+  stuur_leds()/stuur_tijdelijk_leds(): Stuurt kleurcommando's naar Arduino's.
+  stuur_fout(), stuur_groen(), stuur_blauw(), etc.: Specifieke kleurfeedback op gebeurtenissen.
+  volgorde_licht(): Toont het voorbeeld van de juiste volgorde met witte lichten.
+
+- Reset & voorbereiding
+  opstart_spel()/wacht_op_alles_uit(): Zorgt dat alle sensoren vrij zijn bij de start.
+  wacht_op_start_knop(): Blokkeert het spel tot de gebruiker “start” typt.
+
+- Einde
+  verwerk_einde_spel(): Toont eindscore en viert succesvolle afloop met groene LEDs.
+  bereken_score(): Berekent score op basis van aantal fouten.
+  
 ## Arduino code 
 
 ### Wifi
