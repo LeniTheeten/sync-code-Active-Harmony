@@ -422,62 +422,54 @@ print(verwerk_string(invoer))
 ```
 
 ### Game logica
-import os
 import random
-import time
-
-import paho.mqtt.client as mqtt
 import pygame
+import time
+import threading
+from threading import Thread
+import paho.mqtt.client as mqtt
 
 MQTT_BROKER_URL = "mqtt.eclipseprojects.io"
 MQTT_BROKER_PORT = 1883
 MQTT_KEEP_ALIVE = 60
 
-SENSOR_TRESHOLD = 600  # Waarde onder (!) deze waarde is sensor aan
+mqtt_connected = threading.Event()
 
-received_message = None
+sensor_max = 600
+
 is_muziek_bezig = False
 
-# Dictionary met muziekbestanden, gebaseerd op de huidige foldernaam
-audio_folder = os.path.join(os.path.dirname(__file__), "audio")
 muziek_dictionary = {
-    0: os.path.join(audio_folder, "BeatIt1.mp3"),
-    1: os.path.join(audio_folder, "BeatIt2.mp3"),
-    2: os.path.join(audio_folder, "BeatIt3.mp3"),
-    3: os.path.join(audio_folder, "BeatIt4.mp3"),
-    4: os.path.join(audio_folder, "BeatIt5.mp3"),
+    0: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt1.mp3",
+    1: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt2.mp3",
+    2: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt3.mp3",
+    3: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt4.mp3",
+    4: r"C:\Users\lenit\OneDrive - UGent\Documenten\school\2IO\semester 2\project gebruiksgericht ontwerp\code active harmony\full test\BeatIt5.mp3"
 }
+#Bericht ontvangen ActiveHarmony/18:1F:3B:BD:9E:7C:/909
+#Bericht ontvangen ActiveHarmony/20:88:4E:DA:D4:D4:/886
+#Bericht ontvangen ActiveHarmony/74:C7:7A:1B:5A:E0:/975
+#Bericht ontvangen ActiveHarmony/1C:31:7B:1B:5A:E0:/8
+#Bericht ontvangen ActiveHarmony/4C:F1:77:1B:5A:E0:/946
 
-# Dictionary met MAC-adressen en bijbehorende namen
-arduino_dict = {
-    '18:1F:3B:BD:9E:7C': 'mac1', 
-    '20:88:4E:DA:D4:D4': 'mac2', 
-    '74:C7:7A:1B:5A:E0': 'mac3', 
-    '1C:31:7B:1B:5A:E0': 'mac4', 
-    '4C:F1:77:1B:5A:E0': 'mac5'
-}
-
+#arduino_dict = {'18:1F:3B:BD:9E:7C': 'mac1', '20:88:4E:DA:D4:D4': 'mac2', '74:C7:7A:1B:5A:E0': 'mac3', '1C:31:7B:1B:5A:E0': 'mac4', '4C:F1:77:1B:5A:E0': 'mac5'}
+arduino_dict = {'20:88:4E:DA:D4:D4': 'mac1', '74:C7:7A:1B:5A:E0': 'mac2', '1C:31:7B:1B:5A:E0': 'mac3', '4C:F1:77:1B:5A:E0': 'mac4'}
 # Hou globaal de sensorwaarden bij, per Arduino
 # Initialiseer ze allemaal op -1
 tegel_sensor_waardes = dict()
 for mac in arduino_dict.keys():
-    tegel_sensor_waardes[mac] = -1
+    tegel_sensor_waardes[mac] = sensor_max + 1
+
+# Functie die de volgorde van de tegels genereert, afhankelijk van het aantal ingevoerde Arduino's
+def genereer_volgorde_tegels():
+    Volgorde = list(arduino_dict.values())  # Maak een lijst van tegels afhankelijk van het aantal Arduino's
+    random.shuffle(Volgorde)  # Willekeurig schudden van de volgorde
+    print(f"Volgorde van tegels: {Volgorde}")
+    return Volgorde
 
 
-def genereer_volgorde_tegels() -> list:
-    """
-    Functie die de volgorde van de tegels genereert, afhankelijk van het aantal ingevoerde Arduino's.
-    """
-    volgorde = list(arduino_dict.values())  # Maak een lijst van tegels afhankelijk van het aantal Arduino's
-    random.shuffle(volgorde)  # Willekeurig schudden van de volgorde
-    print(f"Volgorde van tegels: {volgorde}")
-    return volgorde
-
-
+# Functie die het spel afspeelt
 def speel_muziek(muziek_index) -> None:
-    """
-    Functie die muziek afspeelt op basis van de index in de muziek_dictionary.
-    """
     global is_muziek_bezig
     is_muziek_bezig = True #blokkeer berichtverwerking
     print(f"Speel {muziek_dictionary[muziek_index]}")
@@ -490,42 +482,31 @@ def speel_muziek(muziek_index) -> None:
 def connect_mqtt(client, userdata, flags, rc):
     if rc == 0:
         print("Geconnecteerd")
+        mqtt_connected.set()  # verbinding is gelukt
         topic = f"ActiveHarmony/+/+"
-        client.subscribe(topic)  # Abonneer je direct na het verbinden
-        print(f"Geabonneerd op topic: {topic}")
+        client.subscribe(topic)
+        print(f"Geabonneerd op topic: {topic}")  # Abonneer je direct na het verbinden
     else:
         print("Verbinden mislukt")
 
 # Callback functie voor ontvangen berichten
-def on_mqtt_message(client, userdata, message):
-    """
-    Deze functie wordt aangeroepen wanneer er een bericht wordt ontvangen op een geabonneerd topic.
-    Het bericht wordt verwerkt en de sensorwaarde wordt opgeslagen in de tegel_sensor_waardes dictionary.
-    Bvb:
-    Bericht ontvangen ActiveHarmony/18:1F:3B:BD:9E:7C:/909
-    Bericht ontvangen ActiveHarmony/20:88:4E:DA:D4:D4:/886
-    Bericht ontvangen ActiveHarmony/74:C7:7A:1B:5A:E0:/975
-    Bericht ontvangen ActiveHarmony/1C:31:7B:1B:5A:E0:/8
-    Bericht ontvangen ActiveHarmony/4C:F1:77:1B:5A:E0:/946
-    """
+def on_message(client, userdata, message):
     global tegel_sensor_waardes
-    
     if message is None:
         return
     
     #print(f"Bericht ontvangen {message.topic}")
-
     parts = message.topic.split("/")
     if len(parts)<3:
         print(f"Ongeldig ontvangen: {message.topic}")
         return
-    
     mac = parts[1]
     try:
         sensor_int = int(parts[2])
-        tegel_sensor_waardes[mac] = sensor_int  # Sla de sensorwaarde op in de dictionary
+        tegel_sensor_waardes[mac] = sensor_int # Opslaan in variabele
     except ValueError:
         print(f"Fout bij het omzetten van sensorwaarde naar int: {parts[2]}")
+    #print(received_message)
 
 def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
     """
@@ -552,15 +533,12 @@ def wacht_op_tegel_veranderd(timeout, min_veranderings_waarde) -> tuple:
             time.sleep(timeout)
 
 
-
-
-# region Alles rond aansturen van LEDs
 def stuur_lichtcommando(topic) -> None:
     #print(f"MQTT-bericht verzonden: {topic}")
-    client.publish(topic, "1")
+    client.publish(topic, "1") 
 
 def stuur_leds(rood, groen, blauw, leds: list) -> None:
-    #print(f"Stuur R:{rood}, G:{groen}, B: {blauw} naar leds {leds}")
+    print(f"Stuur leds {leds}")
     for mac in leds:
         stuur_lichtcommando(f"ActiveHarmony/{mac}/{rood}/{groen}/{blauw}")
 
@@ -573,23 +551,48 @@ def knipper_leds(rood, groen, blauw, leds: list, aantal_keer: int, duur: int) ->
     for i in range(aantal_keer):
         stuur_tijdelijk_leds(rood, groen, blauw, leds, duur)
 
-def stuur_tijdelijk_fout(leds: list):
-    stuur_tijdelijk_leds(255, 0, 0, leds, 1)
+def stuur_fout(leds: list):
+    knipper_leds(255,0,0,leds,5,1)
 
 def stuur_tijdelijk_wit(leds: list):
-    stuur_tijdelijk_leds(255, 255, 255, leds, 1)
+    stuur_tijdelijk_leds(255,255,255, leds, 5)
 
 def stuur_wit(leds: list):
     stuur_leds(255, 255, 255, leds)
 
+def stuur_blauw(leds: list):
+    stuur_tijdelijk_leds(0, 0, 255, leds, 1)
+
 def stuur_groen(leds: list):
-    stuur_leds(0, 255, 0, leds)
-# endregion
+    stuur_tijdelijk_leds(0,255, 0,leds, 1)
 
 
 
-
-
+def do_reactie (mac, value, referentie, stap, al_correct) -> bool:
+    # Controleer of het MAC-adres in de arduino_dict zit
+    if mac not in arduino_dict:
+        print(f"Ongeldig MAC-adres: {mac}")
+        return False, False
+    if value > sensor_max:
+        stuur_fout([mac])
+        return False
+    
+    if sensor_correct(mac, referentie,stap):
+        #if mac not in al_correct:
+        stuur_groen([mac])
+        time.sleep(2)
+            #al_correct.add(mac)
+        #if al_correct:
+        stuur_wit([mac])
+        stuur_wit(list(al_correct))
+        speel_muziek(stap)
+        return True
+    else:
+        stuur_fout([mac])
+        #wacht tot er nergens meer op gestaan wordt
+        wacht_op_alles_uit()
+        volgorde_licht(referentie)
+        return False
 
 def krijg_sensors_die_aanliggen() -> list:
     """
@@ -597,7 +600,7 @@ def krijg_sensors_die_aanliggen() -> list:
     """
     sensors_die_aanliggen = []
     for mac, sensor_waarde in tegel_sensor_waardes.items():
-        if sensor_waarde < SENSOR_TRESHOLD:
+        if sensor_waarde < sensor_max:
             sensors_die_aanliggen.append(mac)
     return sensors_die_aanliggen
 
@@ -608,120 +611,78 @@ def wacht_op_alles_uit():
     """
     sensors_aan = krijg_sensors_die_aanliggen()
     while sensors_aan:
-        print(f"Wachten tot alles uit is. Deze sensoren loggen nog aan: {sensors_aan}")
-        stuur_tijdelijk_fout(sensors_aan)
+        print(f"Wachten tot alles uit is. Deze sensoren liggen nog aan: {sensors_aan}")
+        stuur_fout(sensors_aan)
         time.sleep(1)
         sensors_aan = krijg_sensors_die_aanliggen()
 
-def toon_juiste_volgorde(referentie):
-    """
-    Toon de juiste volgorde van de tegels met wit licht
-    """
+def volgorde_licht(referentie):
     for mac_naam in referentie:
-        for mac_adres, naam in arduino_dict.items():
+        for mac_adres,naam in arduino_dict.items():
             if naam == mac_naam:
                 stuur_tijdelijk_wit([mac_adres])
 
 def opstart_spel():
-    # Wacht tot alle sensoren zijn uitgeschakeld
-    # De sensoren die aanstaan, worden rood gekleurd
+    #stuur_leds(0,255,0,['18:1F:3B:BD:9E:7C'])
     wacht_op_alles_uit()
-
     print("Alle sensoren zijn uit")
-
-    # Toon dat we klaar zijn om te beginnen
-    # door naar alle tegels wit licht te sturen
-    stuur_tijdelijk_wit(list(arduino_dict.keys()))
+    stuur_blauw(list(arduino_dict.keys()))
     time.sleep(1)
+    #stuur_leds(0,0,0,list(arduino_dict.keys()))
+    print("We kunnen beginnen")
 
-    print("Wit op alle tegels afgespeeld, we kunnen beginnen")
-
-def is_sensor_correct (mac, referentie, stap) -> bool:
-    """
-    Checkt of de sensor voor die stap correct is
-    """
+def sensor_correct (mac, referentie, stap) -> bool:
     mac_naam = referentie[stap]
     for amac, naam in arduino_dict.items():
         if naam == mac_naam and amac == mac:
             return True
     return False
 
-def do_reactie (mac, value, referentie, stap, al_correct) -> bool:
-    """
-    Speelt de reactie af op de tegel die is veranderd
-    Geeft True of False terug afhankelijk of het correct was of niet
-    """
-    # Controleer of het MAC-adres in de arduino_dict zit
-    if mac not in arduino_dict:
-        print(f"Ongeldig MAC-adres: {mac}")
-        return False, False
-
-    # Sensor uit? Foutieve tegel
-    if value > SENSOR_TRESHOLD:
-        stuur_tijdelijk_fout([mac])
-        return False
-    
-    if is_sensor_correct(mac, referentie,stap):
-        # Nieuw correcte tegel op groen zetten
-        stuur_groen([mac])
-        # Vorige correcte tegels op wit zetten
-        stuur_wit(list(al_correct))
-        # Speel muziek af
-        speel_muziek(stap)
-        return True
-    else:
-        # Foutive tegel 1x op rood laten knipperen
-        stuur_tijdelijk_fout([mac])
-        # Stuur juiste volgorde licht
-        toon_juiste_volgorde(referentie)
-        return False
-
 def speel_het_spel(referentie):
-    # Speel de juiste volgorde van de tegels af
-    toon_juiste_volgorde(referentie)
-    
-    stap = 0
+    opstart_spel()
 
-    al_correct = set()  # Houd bij welke tegels correct zijn gespeeld
+    volgorde_licht(referentie)
+    stap = 0
+    al_correct = set()
 
     while stap < len(referentie):
-        # Wacht tot een van de tegels is veranderd
-        mac, value = wacht_op_tegel_veranderd(0.5, SENSOR_TRESHOLD)
+        mac,value = wacht_op_tegel_veranderd(0.5, sensor_max)
 
-        # Reageer op de veranderde tegel
         correct = do_reactie(mac, value, referentie, stap, al_correct)
         print(f"Stap {stap} correct!")
         if correct:
             stap += 1
-            al_correct.add(mac)  # Voeg correcte tegel toe aan de set
+            al_correct.add(mac)
             print(f"Reeds correcte tegels: {len(al_correct)}")
         else:
             stap = 0
             al_correct.clear()
             print("Fout! Terug naar stap 0")
+            print(referentie)
+            volgorde_licht(referentie)
 
     print("Je hebt het spel perfect gespeeld")
-    knipper_leds(0, 255, 0, list(al_correct), 5, 1)
-
-
+    knipper_leds(0,255,0,list(al_correct),5,1)
+    volledig_gespeeld = True
+    return volledig_gespeeld
 
 if __name__ == "__main__":
     # Initialiseer de pygame mixer voor audio
     pygame.mixer.init()
 
     # Maak een MQTT-client aan en verbind enkele functies
+    #client = mqtt.Client()
     client = mqtt.Client()
     client.loop_start()
     client.on_connect = connect_mqtt
-    client.on_message = on_mqtt_message
+    client.on_message = on_message
     client.connect(MQTT_BROKER_URL, MQTT_BROKER_PORT, MQTT_KEEP_ALIVE)
+
+    mqtt_connected.wait()  # wacht tot verbinding is gemaakt
 
     # Bedenk de puzzel die moet worden opgelost
     referentie = genereer_volgorde_tegels()
-    
-    # Toon dat we kunnen starten (of wacht tot alle tegels uit zijn)
-    opstart_spel()    
-
+     
     # Speel het spel tot volledig gespeeld
     volledig_gespeeld = False
 
