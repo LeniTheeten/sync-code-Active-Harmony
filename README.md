@@ -454,7 +454,10 @@ def stuur_groen(leds: list):
 def do_reactie (mac, value, referentie, stap, al_correct, wacht_tijd):
     # Controleer of het MAC-adres in de arduino_dict zit
     if value == 1:
-        value_knop = int(str(value)+"00")
+        value_knop = 100
+        value = value_knop
+    elif value == 0:
+        value_knop = 1000
         value = value_knop
 
     if mac not in arduino_dict:
