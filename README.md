@@ -921,7 +921,7 @@ muziek_dictionary = {
 #Bericht ontvangen ActiveHarmony/4C:F1:77:1B:5A:E0:/946
 
 #arduino_dict = {'18:1F:3B:BD:9E:7C': 'mac1', '20:88:4E:DA:D4:D4': 'mac2', '74:C7:7A:1B:5A:E0': 'mac3', '1C:31:7B:1B:5A:E0': 'mac4', '4C:F1:77:1B:5A:E0': 'mac5'}
-arduino_dict = {'20:88:4E:DA:D4:D4': 'mac1', '74:7A:1B:5A:E0': 'mac2', '1C:31:7B:1B:5A:E0': 'mac3', '4C:F1:77:1B:5A:E0': 'mac4'}
+arduino_dict = {'20:88:4E:DA:D4:D4': 'mac1', '74:C7:7A:1B:5A:E0': 'mac2', '1C:31:7B:1B:5A:E0': 'mac3', '4C:F1:77:1B:5A:E0': 'mac4'}
 # Hou globaal de sensorwaarden bij, per Arduino
 # Initialiseer ze allemaal op -1
 tegel_sensor_waardes = dict()
@@ -984,7 +984,7 @@ def start_volume_monitor(start_time):
             time.sleep(1)
     Thread(target=monitor, daemon=True).start()
 
-def pas_volume_geleidelijk_aan(doelvolume, stapgrootte=0.02, interval=0.1):
+def pas_volume_geleidelijk_aan(doelvolume, stapgrootte=0.05, interval=0.05):
     global huidig_volume, volume_thread, stop_thread
 
     def volume_worker():
@@ -1019,9 +1019,9 @@ def pas_volume_aan(wacht_tijd):
         interval = 0.05
     else:
         doelvolume = max(0.5, 1.0 - (wacht_tijd / 30))
-        stapgrootte = 0.5
-        interval = 0.1
-
+        stapgrootte = 0.75
+        interval = 0.066
+    threading.Thread(target=pas_volume_geleidelijk_aan, args=(doelvolume, stapgrootte, interval)).start()
     pas_volume_geleidelijk_aan(doelvolume, stapgrootte, interval)
 
 
@@ -1041,7 +1041,7 @@ def on_message(client, userdata, message):
     global tegel_sensor_waardes
     if message is None:
         return
-    
+    #print(f"Ontvangen data van Arduino: {message.topic}")
     #print(f"Bericht ontvangen {message.topic}")
     parts = message.topic.split("/")
     if len(parts)<3:
@@ -1140,11 +1140,11 @@ def stop_muziek():
         volume_thread.join()
     stop_thread = False
 
-def start_muziek():
+def start_muziek(herhalen = True):
     global huidig_volume
     print(f"Speel {muziek_dictionary[geselecteerd_muziek_index]}")
     pygame.mixer.music.load(muziek_dictionary[geselecteerd_muziek_index])
-    pygame.mixer.music.play(-1)  # Muziek herhaalt zichzelf
+    pygame.mixer.music.play(-1 if herhalen else 0)  # Muziek herhaalt zichzelf
     pas_volume_geleidelijk_aan(1.0)  # Zorg dat volume vanaf het begin juist is
 
 
@@ -1264,8 +1264,13 @@ def verwerk_einde_spel(al_correct, foutteller):
     print(f"Je score: {score}/100")
 
     knipper_leds(0, 255, 0, list(al_correct), 5, 1)
-    pygame.mixer.music.stop() #muziek stopt volledig
+    #pygame.mixer.music.stop() #muziek stopt volledig
+    #start_muziek(herhalen = False)
 
+    while pygame.mixer.music.get_busy():
+        time.sleep (0.5) # Wacht tot muziek volledig is afgespeeld
+
+    print("Muziek afgelopen. Einde van het spel.")
 
 def start_muziek_en_spel_loop(referentie):
     stap = 0
@@ -1333,8 +1338,6 @@ if __name__ == "__main__":
     while not volledig_gespeeld:
 
          volledig_gespeeld = speel_het_spel(referentie)
-
-#herstart de muziek terug wanneer de referentie nogmaals getoont is
 ```
 
 **Simulate sensor**
