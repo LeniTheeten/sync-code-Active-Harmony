@@ -739,11 +739,13 @@ String maakTopic(){
 ```sh
 void loop() {
 
-  char lichtwaardeStr[10]; 
-  sprintf(lichtwaardeStr, "%d", lichtwaarde);
+    char lichtwaardeStr[10]; // Buffer voor de lichtwaarde als string
+  sprintf(lichtwaardeStr, "%d", waardeVoorMQQT); // Zet int om naar string
 
+  // Mac adresss als char*
   const char* macStr = getMacAdress().c_str();
 
+  // Stuur een testbericht naar MQTT
   char topic[50] = "ActiveHarmony/" ;
   strcat(topic, macStr) ;
   strcat(topic, "/");
@@ -755,9 +757,10 @@ void loop() {
   Serial.println("MQTT bericht verzonden!");
   Serial.println(topic);
 
-  delay(100);  // Wacht 5 seconden voordat een nieuw bericht wordt verzonden
-
-  mqttClient.poll();
+  unsigned long vorigeTijd = millis();
+  while (millis() - vorigeTijd < 500) {
+    mqttClient.poll();
+  }
 }
 ```
 
@@ -864,14 +867,27 @@ void zetlicht(String input){
 ### Sensor
 
 ```sh
-const int sensorPin = A0;
+const int knopPin = 2; 
+
+void setup() {
+    pinMode(knopPin, INPUT);
+}
 
 void loop() {  
-
-  int lichtwaarde = analogRead(A0);  // Lees de analoge waarde van de lichtsensor
+  int lichtwaarde = digitalRead(knopPin);  // Lees de analoge waarde van de lichtsensor
     Serial.print("Lichtwaarde: ");
     Serial.println(lichtwaarde);  // Toon de waarde in de seriële monitor
     delay(500);
+  
+  int waardeVoorMQQT;
+
+  if (lichtwaarde == HIGH) {
+    waardeVoorMQQT = 100;
+    Serial.println(waardeVoorMQQT);
+  } else {
+    waardeVoorMQQT = 1000;   // LED uit
+    Serial.println(waardeVoorMQQT);
+  }
 }
 ```
 
