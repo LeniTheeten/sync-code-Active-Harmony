@@ -1,5 +1,5 @@
 Sync-code-Active-Harmony: 
-Dit is een project waarin een Arduino via MQTT communiceert met een Python-programma om een interactieve game-ervaring te creëren. Het spel combineert sensorgegevens van de Arduino met dynamische reacties in Python.
+Dit is een project waarin een Arduino via MQTT communiceert met een Python-programma om een interactieve game-ervaring te creëren. Het spel combineert sensorgegevens van de Arduino met dynamische reacties in Python. Dit is gebaseerd op onze opdracht uit Project Gebruiksgericht Ontwerp. Het spel is gemaakt zodat ouderen fysiek en cognitief worden gestimuleerd en bevorderd.
 ## Bedradingsschema
 
 ![Schakeling_Arduino](https://github.com/user-attachments/assets/20baa988-4897-4f35-89a1-a43fd76f5854)
